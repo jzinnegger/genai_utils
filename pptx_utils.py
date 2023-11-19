@@ -68,6 +68,9 @@ def layout_inspection(template_path, output_path=None):
 
 def change_table_style(shape, style_name='Light Style 1', accent='Accent 1'):
     """
+        Styles ids are from Microsoft documentation 
+        "https://learn.microsoft.com/en-us/previous-versions/office/developer/office-2010/hh273476(v=office.14)?redirectedfrom=MSDN"
+        see also discussion on github "https://github.com/scanny/python-pptx/issues/27"
         Changes the style of a table in a given shape.
         style_name (str): see values below
         accent (str): see values below
