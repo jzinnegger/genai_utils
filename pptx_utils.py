@@ -5,6 +5,7 @@ from pptx import Presentation
 from pptx.dml.color import RGBColor
 from pptx.util import Pt
 from pptx.enum.shapes import MSO_SHAPE
+from pptx.enum.shapes import MSO_SHAPE_TYPE
 import pandas as pd
 import json
 from pptx.oxml.xmlchemy import OxmlElement
@@ -91,9 +92,8 @@ def change_table_style(shape, style_name='Light Style 1', accent='Accent 1'):
     with open('style_data.json', 'r') as file:
         table_style_dict = json.load(file)
 
-
     style_id = table_style_dict.get(style_name, {}).get(accent)
-    print(style_id)
+
 
     if style_id and shape is not None and hasattr(shape, '_element') and shape._element.graphic.graphicData.tbl is not None:
         tbl = shape._element.graphic.graphicData.tbl
@@ -116,3 +116,64 @@ def change_table_style(shape, style_name='Light Style 1', accent='Accent 1'):
 
         tableStyleId_elem.text = style_id  # Set the style ID
 
+
+def insert_slide_with_table(
+    table_df: pd.DataFrame, 
+    title_text: str, 
+    output_path: str, 
+    template_path: str, 
+    layout: int = 2, 
+    table_plc_idx: int = 23, 
+    message_text: str = None, 
+    message_plc_idx: int = 22
+) -> None:
+    """
+    Inserts a slide with a table into a PowerPoint presentation.
+
+    :param table_df: A pandas DataFrame containing the content for the table.
+    :param title_text: Text for the title of the slide.
+    :param output_path: Path to save the output PowerPoint file.
+    :param template_path: Path to the PowerPoint template file.
+    :param layout: Index of the slide layout to use.
+    :param table_plc_idx: Placeholder index for the table.
+    :param message_text: Text for the message on the slide, if any.
+    :param message_plc_idx: Placeholder index for the message.
+    :return: None
+    """
+
+    prs = Presentation(template_path)
+
+    # Add a slide with layout
+    slide_layout = prs.slide_layouts[layout]
+    slide = prs.slides.add_slide(slide_layout)
+
+    # Set the title
+    title_placeholder = slide.placeholders[0]
+    title_placeholder.text = title_text
+
+    # Check if the message placeholder exists and message text is provided
+    if message_plc_idx < len(slide.placeholders):
+        message_placeholder = slide.placeholders[message_plc_idx]
+        if message_placeholder.shape_type == MSO_SHAPE_TYPE.PLACEHOLDER and message_text:
+            message_placeholder.text = message_text
+
+    # Add a table to the table placeholder
+    table_placeholder = slide.placeholders[table_plc_idx]
+    rows, cols = table_df.shape[0] + 1, table_df.shape[1] + 1
+    shape = table_placeholder.insert_table(rows, cols)
+    table = shape.table
+
+    # Set column names and row headers
+    for col in range(1, cols):
+        table.cell(0, col).text = str(table_df.columns[col - 1])
+
+    for row in range(1, rows):
+        table.cell(row, 0).text = str(table_df.index[row - 1])
+        for col in range(1, cols):
+            table.cell(row, col).text = str(table_df.iloc[row - 1, col - 1])
+
+    # Set the table style
+    change_table_style(shape)
+
+    # Save the presentation
+    prs.save(output_path)
