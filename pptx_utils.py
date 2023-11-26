@@ -67,7 +67,7 @@ def layout_inspection(template_path, output_path=None):
 
 
 
-def change_table_style(shape, style_name='Light Style 1', accent='Accent 1'):
+def change_table_style(shape, style_name='Light Style 2', accent='Accent 1'):
     """
         Styles ids are from Microsoft documentation 
         "https://learn.microsoft.com/en-us/previous-versions/office/developer/office-2010/hh273476(v=office.14)?redirectedfrom=MSDN"
@@ -173,7 +173,7 @@ def insert_slide_with_table(
             table.cell(row, col).text = str(table_df.iloc[row - 1, col - 1])
 
     # Set the table style
-    change_table_style(shape)
+    change_table_style(shape, style_name='Light Style 2', accent='Accent 1')
 
     # Save the presentation
     prs.save(output_path)
